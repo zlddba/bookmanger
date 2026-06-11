@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.AdminMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.Admin">
+        SELECT user_id, password, role FROM admin WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.Admin">
+        SELECT user_id, password, role FROM admin
+    </select>
+
+    <insert id="insert">
+        INSERT INTO admin (user_id, password, role) VALUES (#{userId}, #{password}, #{role})
+    </insert>
+
+    <update id="update">
+        UPDATE admin SET password = #{password}, role = #{role} WHERE user_id = #{userId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM admin WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

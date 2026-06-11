@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.MemberPolicyMapper">
+
+    <select id="selectByLevel" resultType="org.zl.team.entity.MemberPolicy">
+        SELECT level, min_amount, discount, gift, remark
+        FROM member_policy WHERE level = #{level}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.MemberPolicy">
+        SELECT level, min_amount, discount, gift, remark
+        FROM member_policy ORDER BY min_amount
+    </select>
+
+    <select id="selectByMinAmount" resultType="org.zl.team.entity.MemberPolicy">
+        SELECT level, min_amount, discount, gift, remark
+        FROM member_policy WHERE min_amount &lt;= #{amount}
+        ORDER BY min_amount DESC LIMIT 1
+    </select>
+
+    <insert id="insert">
+        INSERT INTO member_policy (level, min_amount, discount, gift, remark)
+        VALUES (#{level}, #{minAmount}, #{discount}, #{gift}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE member_policy SET min_amount = #{minAmount}, discount = #{discount},
+        gift = #{gift}, remark = #{remark}
+        WHERE level = #{level}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM member_policy WHERE level = #{level}
+    </delete>
+
+</mapper>

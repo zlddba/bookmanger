@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.ReturnRecordMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.ReturnRecord">
+        SELECT id, supplier_id, book_id, unit_price, quantity, amount, reason, date, remark
+        FROM return_record WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.ReturnRecord">
+        SELECT id, supplier_id, book_id, unit_price, quantity, amount, reason, date, remark
+        FROM return_record ORDER BY date DESC
+    </select>
+
+    <select id="selectBySupplier" resultType="org.zl.team.entity.ReturnRecord">
+        SELECT id, supplier_id, book_id, unit_price, quantity, amount, reason, date, remark
+        FROM return_record WHERE supplier_id = #{supplierId} ORDER BY date DESC
+    </select>
+
+    <select id="selectByDateRange" resultType="org.zl.team.entity.ReturnRecord">
+        SELECT id, supplier_id, book_id, unit_price, quantity, amount, reason, date, remark
+        FROM return_record WHERE date BETWEEN #{startDate} AND #{endDate} ORDER BY date DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO return_record (supplier_id, book_id, unit_price, quantity, amount, reason, date, remark)
+        VALUES (#{supplierId}, #{bookId}, #{unitPrice}, #{quantity}, #{amount}, #{reason}, #{date}, #{remark})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM return_record WHERE id = #{id}
+    </delete>
+
+</mapper>

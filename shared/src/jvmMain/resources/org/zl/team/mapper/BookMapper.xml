@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.BookMapper">
+
+    <resultMap id="bookMap" type="org.zl.team.entity.Book">
+        <id property="bookId" column="book_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="title" column="title"/>
+        <result property="series" column="series"/>
+        <result property="author" column="author"/>
+        <result property="publisher" column="publisher"/>
+        <result property="edition" column="edition"/>
+        <result property="isbn" column="isbn"/>
+        <result property="price" column="price"/>
+        <result property="stock" column="stock"/>
+        <result property="description" column="description"/>
+        <result property="keywords" column="keywords"/>
+        <result property="publishDate" column="publish_date"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="bookMap">
+        SELECT * FROM book WHERE book_id = #{bookId}
+    </select>
+
+    <select id="selectAll" resultMap="bookMap">
+        SELECT * FROM book
+    </select>
+
+    <select id="searchByKeyword" resultMap="bookMap">
+        SELECT * FROM book
+        WHERE title LIKE '%' || #{keyword} || '%'
+           OR author LIKE '%' || #{keyword} || '%'
+           OR publisher LIKE '%' || #{keyword} || '%'
+           OR isbn LIKE '%' || #{keyword} || '%'
+           OR keywords LIKE '%' || #{keyword} || '%'
+    </select>
+
+    <insert id="insert">
+        INSERT INTO book (book_id, category_id, title, series, author, publisher, edition, isbn,
+        price, stock, description, keywords, publish_date, created_at)
+        VALUES (#{bookId}, #{categoryId}, #{title}, #{series}, #{author}, #{publisher}, #{edition}, #{isbn},
+        #{price}, #{stock}, #{description}, #{keywords}, #{publishDate}, #{createdAt})
+    </insert>
+
+    <update id="update">
+        UPDATE book SET category_id = #{categoryId}, title = #{title}, series = #{series},
+        author = #{author}, publisher = #{publisher}, edition = #{edition}, isbn = #{isbn},
+        price = #{price}, stock = #{stock}, description = #{description},
+        keywords = #{keywords}, publish_date = #{publishDate}
+        WHERE book_id = #{bookId}
+    </update>
+
+    <update id="updateStock">
+        UPDATE book SET stock = #{stock} WHERE book_id = #{bookId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM book WHERE book_id = #{bookId}
+    </delete>
+
+</mapper>

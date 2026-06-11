@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.PurchaseRecordMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.PurchaseRecord">
+        SELECT id, supplier_id, book_id, quantity, unit_price, discount, amount, date, remark
+        FROM purchase_record WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.PurchaseRecord">
+        SELECT id, supplier_id, book_id, quantity, unit_price, discount, amount, date, remark
+        FROM purchase_record ORDER BY date DESC
+    </select>
+
+    <select id="selectBySupplier" resultType="org.zl.team.entity.PurchaseRecord">
+        SELECT id, supplier_id, book_id, quantity, unit_price, discount, amount, date, remark
+        FROM purchase_record WHERE supplier_id = #{supplierId} ORDER BY date DESC
+    </select>
+
+    <select id="selectByDateRange" resultType="org.zl.team.entity.PurchaseRecord">
+        SELECT id, supplier_id, book_id, quantity, unit_price, discount, amount, date, remark
+        FROM purchase_record WHERE date BETWEEN #{startDate} AND #{endDate} ORDER BY date DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO purchase_record (supplier_id, book_id, quantity, unit_price, discount, amount, date, remark)
+        VALUES (#{supplierId}, #{bookId}, #{quantity}, #{unitPrice}, #{discount}, #{amount}, #{date}, #{remark})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM purchase_record WHERE id = #{id}
+    </delete>
+
+</mapper>

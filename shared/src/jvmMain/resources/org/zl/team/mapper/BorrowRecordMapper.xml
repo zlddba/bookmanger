@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.BorrowRecordMapper">
+
+    <select id="selectAll" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record ORDER BY id DESC
+    </select>
+
+    <select id="selectById" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record WHERE id = #{id}
+    </select>
+
+    <select id="selectByMember" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record WHERE card_no = #{cardNo} ORDER BY id DESC
+    </select>
+
+    <select id="selectByBook" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record WHERE book_id = #{bookId} ORDER BY id DESC
+    </select>
+
+    <select id="selectByStatus" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record WHERE status = #{status} ORDER BY id DESC
+    </select>
+
+    <select id="selectActiveByMember" resultType="org.zl.team.entity.BorrowRecord">
+        SELECT id, book_id, card_no, borrow_date, due_date, return_date,
+               status, renew_count, remark
+        FROM borrow_record WHERE card_no = #{cardNo} AND status != '已归还' ORDER BY id DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO borrow_record (book_id, card_no, borrow_date, due_date, return_date, status, renew_count, remark)
+        VALUES (#{bookId}, #{cardNo}, #{borrowDate}, #{dueDate}, #{returnDate}, #{status}, #{renewCount}, #{remark})
+    </insert>
+
+    <update id="updateReturn">
+        UPDATE borrow_record SET return_date = #{returnDate}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRenew">
+        UPDATE borrow_record SET due_date = #{dueDate}, renew_count = #{renewCount}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM borrow_record WHERE id = #{id}
+    </delete>
+
+</mapper>

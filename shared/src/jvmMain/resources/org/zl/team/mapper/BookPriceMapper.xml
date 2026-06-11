@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.BookPriceMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.BookPrice">
+        SELECT book_id, price, date FROM book_price WHERE book_id = #{bookId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO book_price (book_id, price, date)
+        VALUES (#{bookId}, #{price}, #{date})
+    </insert>
+
+    <update id="update">
+        UPDATE book_price SET price = #{price}, date = #{date}
+        WHERE book_id = #{bookId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM book_price WHERE book_id = #{bookId}
+    </delete>
+
+</mapper>

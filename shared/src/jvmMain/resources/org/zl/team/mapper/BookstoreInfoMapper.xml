@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.BookstoreInfoMapper">
+
+    <select id="selectByName" resultType="org.zl.team.entity.BookstoreInfo">
+        SELECT name, address, website, contact, phone, mobile, email, description, remark
+        FROM bookstore_info WHERE name = #{name}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.BookstoreInfo">
+        SELECT name, address, website, contact, phone, mobile, email, description, remark
+        FROM bookstore_info
+    </select>
+
+    <insert id="insert">
+        INSERT INTO bookstore_info (name, address, website, contact, phone, mobile, email, description, remark)
+        VALUES (#{name}, #{address}, #{website}, #{contact}, #{phone}, #{mobile}, #{email}, #{description}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE bookstore_info SET address = #{address}, website = #{website},
+        contact = #{contact}, phone = #{phone}, mobile = #{mobile}, email = #{email},
+        description = #{description}, remark = #{remark}
+        WHERE name = #{name}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM bookstore_info WHERE name = #{name}
+    </delete>
+
+</mapper>

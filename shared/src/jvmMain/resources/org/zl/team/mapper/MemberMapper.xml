@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.MemberMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.Member">
+        SELECT card_no, level, name, gender, address, company, phone, email, motto, reg_date, total_spent
+        FROM member WHERE card_no = #{cardNo}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.Member">
+        SELECT card_no, level, name, gender, address, company, phone, email, motto, reg_date, total_spent
+        FROM member
+    </select>
+
+    <insert id="insert">
+        INSERT INTO member (card_no, level, name, gender, address, company, phone, email, motto, reg_date, total_spent)
+        VALUES (#{cardNo}, #{level}, #{name}, #{gender}, #{address}, #{company}, #{phone}, #{email}, #{motto}, #{regDate}, #{totalSpent})
+    </insert>
+
+    <update id="update">
+        UPDATE member SET level = #{level}, name = #{name}, gender = #{gender},
+        address = #{address}, company = #{company}, phone = #{phone}, email = #{email}, motto = #{motto},
+        total_spent = #{totalSpent}
+        WHERE card_no = #{cardNo}
+    </update>
+
+    <update id="updateLevel">
+        UPDATE member SET level = #{level} WHERE card_no = #{cardNo}
+    </update>
+
+    <update id="updateTotalSpent">
+        UPDATE member SET total_spent = #{totalSpent} WHERE card_no = #{cardNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM member WHERE card_no = #{cardNo}
+    </delete>
+
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zl.team.mapper.BookReservationMapper">
+
+    <select id="selectById" resultType="org.zl.team.entity.BookReservation">
+        SELECT id, book_title, author, publisher, isbn, customer_name, customer_phone,
+               status, note, created_at, resolved_at
+        FROM book_reservation WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="org.zl.team.entity.BookReservation">
+        SELECT id, book_title, author, publisher, isbn, customer_name, customer_phone,
+               status, note, created_at, resolved_at
+        FROM book_reservation ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByStatus" resultType="org.zl.team.entity.BookReservation">
+        SELECT id, book_title, author, publisher, isbn, customer_name, customer_phone,
+               status, note, created_at, resolved_at
+        FROM book_reservation WHERE status = #{status} ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO book_reservation (book_title, author, publisher, isbn, customer_name, customer_phone, status, note, created_at)
+        VALUES (#{bookTitle}, #{author}, #{publisher}, #{isbn}, #{customerName}, #{customerPhone}, #{status}, #{note}, #{createdAt})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE book_reservation SET status = #{status}, resolved_at = #{resolvedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM book_reservation WHERE id = #{id}
+    </delete>
+
+</mapper>
