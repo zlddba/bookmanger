@@ -5,7 +5,12 @@ plugins {
 }
 
 kotlin {
-    jvm()
+    jvm {
+        withJava()
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
     
     
     sourceSets {
