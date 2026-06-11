@@ -67,10 +67,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: 安装 WiX Toolset
-        run: choco install wixtoolset --version=3.14.0 --no-progress --confirm
-        shell: powershell
-
       - name: 生成 JRE（jlink）
         run: |
           jlink --module-path "%JAVA_HOME%/jmods" ^
