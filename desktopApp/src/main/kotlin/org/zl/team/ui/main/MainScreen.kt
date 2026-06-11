@@ -426,7 +426,8 @@ fun getMenuGroups(role: String): List<MenuGroup> = when (role) {
         MenuGroup("销售管理", listOf(
             MenuItem("图书销售", Screen.Sell),
             MenuItem("今日统计", Screen.TodayStat),
-            MenuItem("销售查询", Screen.SaleQuery)
+            MenuItem("销售查询", Screen.SaleQuery),
+            MenuItem("缺书登记", Screen.Reservation)
         )),
         MenuGroup("会员管理", listOf(
             MenuItem("会员列表", Screen.MemberManage),
@@ -447,13 +448,19 @@ fun getMenuGroups(role: String): List<MenuGroup> = when (role) {
             MenuItem("消费记录", Screen.MemberPurchaseHistory)
         )),
         MenuGroup("会员政策", listOf(MenuItem("优惠政策", Screen.MemberPolicyView))),
-        MenuGroup("图书检索", listOf(MenuItem("图书检索", Screen.BookSearch))),
+        MenuGroup("图书检索", listOf(
+            MenuItem("图书检索", Screen.BookSearch),
+            MenuItem("缺书登记", Screen.Reservation)
+        )),
         MenuGroup("客户反馈", listOf(MenuItem("提交反馈", Screen.FeedbackSubmit))),
     )
 
     "游客" -> listOf(
         MenuGroup("会员服务", listOf(MenuItem("注册会员", Screen.NewMember))),
-        MenuGroup("图书检索", listOf(MenuItem("图书检索", Screen.BookSearch))),
+        MenuGroup("图书检索", listOf(
+            MenuItem("图书检索", Screen.BookSearch),
+            MenuItem("缺书登记", Screen.Reservation)
+        )),
         MenuGroup("客户反馈", listOf(MenuItem("提交反馈", Screen.FeedbackSubmit))),
     )
 

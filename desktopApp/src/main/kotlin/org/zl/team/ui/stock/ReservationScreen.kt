@@ -23,6 +23,7 @@ import org.zl.team.entity.Member
 import org.zl.team.service.BookService
 import org.zl.team.service.MemberService
 import org.zl.team.service.ReservationService
+import org.zl.team.util.SessionManager
 import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
@@ -143,7 +144,9 @@ private fun ReservationDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
 
     // ─── 客户信息 ───────────────────────────────────────
     var cardNo by remember { mutableStateOf("") }
-    var customerName by remember { mutableStateOf("") }
+    var customerName by remember { mutableStateOf(
+        if (SessionManager.currentUserRole == "会员") SessionManager.currentUserName else ""
+    ) }
     var customerPhone by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
 
