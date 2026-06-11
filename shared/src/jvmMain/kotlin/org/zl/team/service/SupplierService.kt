@@ -27,6 +27,7 @@ object SupplierService {
             if (mapper.selectById(supplier.supplierId) != null) return false
             mapper.insert(supplier)
             session.commit()
+            OperationLogService.log("新增", "供应商", supplier.supplierId, "新增供应商: ${supplier.name}")
             return true
         } catch (e: Exception) {
             session.rollback(); throw e
@@ -40,6 +41,7 @@ object SupplierService {
             if (mapper.selectById(supplier.supplierId) == null) return false
             mapper.update(supplier)
             session.commit()
+            OperationLogService.log("修改", "供应商", supplier.supplierId, "修改供应商: ${supplier.name}")
             return true
         } catch (e: Exception) {
             session.rollback(); throw e
@@ -50,9 +52,10 @@ object SupplierService {
         val session = MyBatisUtil.getSqlSession()
         try {
             val mapper = session.getMapper(SupplierMapper::class.java)
-            if (mapper.selectById(id) == null) return false
+            val supplier = mapper.selectById(id) ?: return false
             mapper.delete(id)
             session.commit()
+            OperationLogService.log("删除", "供应商", id, "删除供应商: ${supplier.name}")
             return true
         } catch (e: Exception) {
             session.rollback(); throw e

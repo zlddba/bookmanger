@@ -19,6 +19,7 @@ import org.zl.team.service.CategoryService
 import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
+import org.zl.team.util.CsvExporter
 
 @Composable
 fun CategoryManageScreen() {
@@ -62,6 +63,14 @@ fun CategoryManageScreen() {
             Button(onClick = { editing = null; parentId = null; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
                 Text("新增顶级分类")
             }
+            Spacer(Modifier.width(8.dp))
+            OutlinedButton(onClick = {
+                CsvExporter.export(
+                    listOf("编号", "名称", "父分类", "子分类数"),
+                    categories.map { listOf(it.categoryId, it.name, it.parentId ?: "(顶级)", categories.count { c -> c.parentId == it.categoryId }.toString()) },
+                    "图书分类.csv"
+                )
+            }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
         }
         Spacer(Modifier.height(16.dp))
         when {

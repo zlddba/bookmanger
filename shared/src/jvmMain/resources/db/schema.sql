@@ -169,6 +169,17 @@ CREATE TABLE IF NOT EXISTS book_reservation (
     resolved_at    TEXT                                               -- 处理日期
 );
 
+-- 16. 操作日志表
+CREATE TABLE IF NOT EXISTS operation_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    action      TEXT NOT NULL,                                        -- 操作类型：新增/修改/删除/导入/备份
+    target      TEXT NOT NULL,                                        -- 操作对象：图书/会员/供应商/员工/分类/预订
+    target_id   TEXT,                                                 -- 对象标识（编号/ID）
+    detail      TEXT,                                                 -- 操作详情
+    operator    TEXT NOT NULL,                                        -- 操作人
+    created_at  TEXT DEFAULT (datetime('now', 'localtime'))           -- 操作时间
+);
+
 -- 15. 借阅记录表
 CREATE TABLE IF NOT EXISTS borrow_record (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,

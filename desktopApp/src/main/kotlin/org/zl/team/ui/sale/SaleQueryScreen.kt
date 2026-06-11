@@ -19,6 +19,7 @@ import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
 import org.zl.team.ui.components.DateField
+import org.zl.team.util.CsvExporter
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -62,6 +63,14 @@ fun SaleQueryScreen() {
                     Button(onClick = { query() }, shape = RoundedCornerShape(10.dp)) { Text("查询") }
                     Spacer(Modifier.width(8.dp))
                     Text("共 ${records.size} 条记录", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedButton(onClick = {
+                        CsvExporter.export(
+                            listOf("日期", "图书编号", "数量", "折扣", "金额", "会员卡", "备注"),
+                            records.map { listOf(it.date, it.bookId, it.quantity.toString(), it.discount.toString(), if (it.amount != null) "¥%.2f".format(it.amount) else "", it.cardNo, it.remark) },
+                            "销售记录.csv"
+                        )
+                    }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
                 }
                 Spacer(Modifier.height(16.dp))
                 Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {

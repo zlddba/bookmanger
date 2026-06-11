@@ -29,6 +29,7 @@ object ReservationService {
         try {
             session.getMapper(BookReservationMapper::class.java).insert(reservation)
             session.commit()
+            OperationLogService.log("新增", "预订", reservation.id.toString(), "新增预订: ${reservation.bookTitle} - ${reservation.customerName}")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -45,6 +46,7 @@ object ReservationService {
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             session.getMapper(BookReservationMapper::class.java).updateStatus(id, "已到货", now)
             session.commit()
+            OperationLogService.log("修改", "预订", id.toString(), "预订到货: id=$id")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -61,6 +63,7 @@ object ReservationService {
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             session.getMapper(BookReservationMapper::class.java).updateStatus(id, "已取消", now)
             session.commit()
+            OperationLogService.log("修改", "预订", id.toString(), "预订取消: id=$id")
             return true
         } catch (e: Exception) {
             session.rollback()

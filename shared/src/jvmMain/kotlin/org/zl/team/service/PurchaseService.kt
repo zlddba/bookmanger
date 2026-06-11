@@ -49,6 +49,7 @@ object PurchaseService {
                 priceMapper.insert(BookPrice(bookId, unitPrice, date))
 
             session.commit()
+            OperationLogService.log("进货", "图书", bookId, "进货: $bookId x$quantity, 单价¥$unitPrice")
             return true
         } catch (e: Exception) { session.rollback(); throw e }
         finally { session.close() }

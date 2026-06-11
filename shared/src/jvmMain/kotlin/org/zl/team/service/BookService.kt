@@ -40,6 +40,7 @@ object BookService {
             if (mapper.selectById(book.bookId) != null) return false
             mapper.insert(book)
             session.commit()
+            OperationLogService.log("新增", "图书", book.bookId, "新增图书: ${book.title}")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -56,6 +57,7 @@ object BookService {
             if (mapper.selectById(book.bookId) == null) return false
             mapper.update(book)
             session.commit()
+            OperationLogService.log("修改", "图书", book.bookId, "修改图书: ${book.title}")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -69,9 +71,10 @@ object BookService {
         val session = MyBatisUtil.getSqlSession()
         try {
             val mapper = session.getMapper(BookMapper::class.java)
-            if (mapper.selectById(bookId) == null) return false
+            val book = mapper.selectById(bookId) ?: return false
             mapper.delete(bookId)
             session.commit()
+            OperationLogService.log("删除", "图书", bookId, "删除图书: ${book.title}")
             return true
         } catch (e: Exception) {
             session.rollback()

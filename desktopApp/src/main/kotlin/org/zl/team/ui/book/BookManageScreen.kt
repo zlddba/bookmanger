@@ -26,6 +26,7 @@ import org.zl.team.ui.components.DateField
 import org.zl.team.ui.components.PaginationBar
 import org.zl.team.ui.components.page
 import org.zl.team.util.CsvImporter
+import org.zl.team.util.CsvExporter
 
 @Composable
 fun BookManageScreen() {
@@ -38,6 +39,11 @@ fun BookManageScreen() {
     var loadError by remember { mutableStateOf<String?>(null) }
     var importResult by remember { mutableStateOf<CsvImporter.ImportResult?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var isGridView by remember { mutableStateOf(false) }
+    var batchMode by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var showBatchPriceDialog by remember { mutableStateOf(false) }
+    var batchPriceValue by remember { mutableStateOf("") }
     // 分页
     var currentPage by remember { mutableStateOf(0) }
     val pageSize = 20
@@ -80,6 +86,22 @@ fun BookManageScreen() {
                     importResult = result
                     load()
                 }, shape = RoundedCornerShape(10.dp)) { Text("导入 CSV") }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(onClick = {
+                    CsvExporter.export(
+                        listOf("编号", "书名", "作者", "出版社", "定价", "库存", "分类", "ISBN"),
+                        books.map { listOf(it.bookId, it.title, it.author, it.publisher, it.price?.toString(), it.stock.toString(), it.categoryId, it.isbn) },
+                        "图书列表.csv"
+                    )
+                }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(onClick = { isGridView = !isGridView }, shape = RoundedCornerShape(10.dp)) {
+                    Text(if (isGridView) "列表模式" else "网格模式", fontSize = 12.sp)
+                }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(onClick = { batchMode = !batchMode; selectedIds = emptySet() }, shape = RoundedCornerShape(10.dp)) {
+                    Text(if (batchMode) "退出批量" else "批量操作", fontSize = 12.sp)
+                }
             }
             Spacer(Modifier.height(16.dp))
             Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -88,37 +110,98 @@ fun BookManageScreen() {
                     loadError != null -> ErrorBanner(loadError!!, onRetry = ::load)
                     books.isEmpty() -> EmptyHint(if (keyword.isBlank()) "暂无图书数据" else "未找到匹配的图书")
                     else -> {
-                        Column {
-                            Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)).padding(horizontal = 16.dp, vertical = 12.dp)) {
-                                Text("编号", Modifier.weight(0.8f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                Text("书名", Modifier.weight(1.8f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                Text("作者", Modifier.weight(1f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                Text("出版社", Modifier.weight(1.2f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                Text("定价", Modifier.weight(0.6f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                                Text("库存", Modifier.weight(0.5f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-                            }
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-                            LazyColumn {
-                                itemsIndexed(pagedBooks) { index, b ->
-                                    val isSel = selected?.bookId == b.bookId
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().clickable { selected = b }.background(
-                                            when { isSel -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f); index % 2 == 1 -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f); else -> MaterialTheme.colorScheme.surface }
-                                        ).padding(horizontal = 16.dp, vertical = 10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(b.bookId, Modifier.weight(0.8f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                        Text(b.title, Modifier.weight(1.8f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                        Text(b.author ?: "-", Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                        Text(b.publisher ?: "-", Modifier.weight(1.2f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                        Text(if (b.price != null) "¥%.2f".format(b.price) else "-", Modifier.weight(0.6f), fontSize = 13.sp)
-                                        Text("${b.stock}", Modifier.weight(0.5f), fontSize = 13.sp, color = if (b.stock > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                        if (isGridView) {
+                            // ─── 网格模式 ────────────────────
+                            val columns = 4
+                            LazyColumn(Modifier.fillMaxSize().padding(8.dp)) {
+                                val gridBooks = pagedBooks
+                                val rows = gridBooks.chunked(columns)
+                                itemsIndexed(rows) { _, rowBooks ->
+                                    Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        rowBooks.forEach { b ->
+                                            val isSel = selected?.bookId == b.bookId
+                                            Surface(
+                                                modifier = Modifier.weight(1f).clickable { selected = b },
+                                                shape = RoundedCornerShape(10.dp),
+                                                color = if (isSel) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                                tonalElevation = 1.dp
+                                            ) {
+                                                Column(Modifier.padding(12.dp).fillMaxWidth()) {
+                                                    Text("📖", fontSize = 24.sp)
+                                                    Spacer(Modifier.height(6.dp))
+                                                    Text(b.title, fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                                    Spacer(Modifier.height(4.dp))
+                                                    Text(b.author ?: "-", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                    Spacer(Modifier.height(2.dp))
+                                                    Text("¥%.2f".format(b.price ?: 0.0), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                                    Text("库存: ${b.stock}", fontSize = 10.sp, color = if (b.stock > 0) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error)
+                                                }
+                                            }
+                                        }
                                     }
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f))
                                 }
                             }
-                            PaginationBar(currentPage, totalPages, { currentPage = it })
+                        } else {
+                            // ─── 列表模式 ────────────────────
+                            Column {
+                                Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)).padding(horizontal = 16.dp, vertical = 12.dp)) {
+                                    if (batchMode) Text("选择", Modifier.width(40.dp), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("编号", Modifier.weight(0.8f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("书名", Modifier.weight(1.8f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("作者", Modifier.weight(1f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("出版社", Modifier.weight(1.2f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("定价", Modifier.weight(0.6f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text("库存", Modifier.weight(0.5f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                }
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                                LazyColumn {
+                                    itemsIndexed(pagedBooks) { index, b ->
+                                        val isSel = selected?.bookId == b.bookId
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().clickable {
+                                                if (batchMode) {
+                                                    selectedIds = if (b.bookId in selectedIds) selectedIds - b.bookId else selectedIds + b.bookId
+                                                } else { selected = b }
+                                            }.background(
+                                                when { isSel -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f); index % 2 == 1 -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f); else -> MaterialTheme.colorScheme.surface }
+                                            ).padding(horizontal = if (batchMode) 8.dp else 16.dp, vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (batchMode) {
+                                                Checkbox(checked = b.bookId in selectedIds, onCheckedChange = {
+                                                    selectedIds = if (b.bookId in selectedIds) selectedIds - b.bookId else selectedIds + b.bookId
+                                                }, modifier = Modifier.width(40.dp))
+                                            }
+                                            Text(b.bookId, Modifier.weight(0.8f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(b.title, Modifier.weight(1.8f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(b.author ?: "-", Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(b.publisher ?: "-", Modifier.weight(1.2f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(if (b.price != null) "¥%.2f".format(b.price) else "-", Modifier.weight(0.6f), fontSize = 13.sp)
+                                            Text("${b.stock}", Modifier.weight(0.5f), fontSize = 13.sp, color = if (b.stock > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+                                        }
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f))
+                                    }
+                                }
+                            }
                         }
+                        PaginationBar(currentPage, totalPages, { currentPage = it })
+                    }
+                }
+            }
+
+            // ─── 批量操作栏 ──────────────────────────────
+            if (batchMode) {
+                Spacer(Modifier.height(12.dp))
+                Surface(shape = RoundedCornerShape(10.dp), color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f), modifier = Modifier.fillMaxWidth()) {
+                    Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("已选 ${selectedIds.size} 项", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        Spacer(Modifier.weight(1f))
+                        OutlinedButton(onClick = {
+                            selectedIds.forEach { BookService.delete(it) }
+                            selectedIds = emptySet(); load()
+                        }, shape = RoundedCornerShape(8.dp), enabled = selectedIds.isNotEmpty()) { Text("批量删除", fontSize = 12.sp, color = MaterialTheme.colorScheme.error) }
+                        Spacer(Modifier.width(8.dp))
+                        Button(onClick = { showBatchPriceDialog = true }, shape = RoundedCornerShape(8.dp), enabled = selectedIds.isNotEmpty()) { Text("批量改价", fontSize = 12.sp) }
                     }
                 }
             }

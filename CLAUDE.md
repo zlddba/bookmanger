@@ -53,6 +53,21 @@ SQLite (单文件 bookstore.db)
 | 会员管理 | MemberManageScreen, NewMemberScreen, MemberPolicyScreen, MemberSelfScreen |
 | 客户反馈 | FeedbackSubmitScreen, FeedbackManageScreen |
 | 财务管理 | SettlementScreen, GrossProfitScreen |
-| 统计分析 | StatisticsScreen (含趋势图表 Tab) |
+| 统计分析 | StatisticsScreen (含趋势图表 Tab + 分类分析环形图) |
 | 借阅管理 | BorrowManageScreen |
 | 图书检索 | BookSearchScreen |
+
+## 新增功能（第二批）
+
+| 功能 | 说明 |
+|------|------|
+| 工作台 Dashboard | 4 张统计卡片 + 库存预警列表 + 会员消费排行 + 最近操作日志 |
+| 数据备份恢复 | ZIP 压缩备份、恢复、删除，自动清理旧备份 |
+| 操作日志 | 查看操作日志，按类型筛选 |
+| 系统配置 | 库存预警阈值、严重短缺阈值、备份保留数、每日滞纳金设置 |
+| 统计分析增强 | 分类分析环形图 Tab |
+| 数据导出 CSV | BookManageScreen, MemberManageScreen, SaleQueryScreen, PurchaseQueryScreen, ReturnQueryScreen, StockStatScreen, CategoryManageScreen, BorrowManageScreen |
+| 滞纳金动态配置 | 借用系统配置中的每日滞纳金费率 |
+| 网格浏览模式 | BookManageScreen 支持网格/列表双模式切换 |
+| 批量操作 | BookManageScreen 批量删除、批量改价（批次选择框） |
+| 角色菜单完善 | 经理/仓库管理员/售书员/会员/游客 各自菜单按需分配 |

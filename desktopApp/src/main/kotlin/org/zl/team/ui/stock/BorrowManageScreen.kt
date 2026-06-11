@@ -24,6 +24,7 @@ import org.zl.team.service.BookService
 import org.zl.team.service.BorrowService
 import org.zl.team.service.BorrowService.MAX_BORROW
 import org.zl.team.service.MemberService
+import org.zl.team.service.SystemConfig
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -31,6 +32,7 @@ import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
 import org.zl.team.ui.components.DateField
+import org.zl.team.util.CsvExporter
 
 @Composable
 fun BorrowManageScreen() {
@@ -70,6 +72,22 @@ fun BorrowManageScreen() {
                 }
                 Spacer(Modifier.width(8.dp))
                 Button(onClick = { showDialog = true }, shape = RoundedCornerShape(10.dp)) { Text("新增借阅") }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(onClick = {
+                    CsvExporter.export(
+                        listOf("图书", "会员卡", "借阅日", "到期日", "状态", "滞纳金"),
+                        records.map { r ->
+                            val today = LocalDate.now()
+                            val isOver = r.status == "借阅中" && try { LocalDate.parse(r.dueDate).isBefore(today) } catch (_: Exception) { false }
+                            val days = if (isOver) ChronoUnit.DAYS.between(try { LocalDate.parse(r.dueDate) } catch (_: Exception) { today }, today) else 0
+                            val fee = days * SystemConfig.getLateFeeDailyRate()
+                            listOf(r.bookId, r.cardNo, r.borrowDate, r.dueDate,
+                                if (isOver) "已逾期" else r.status,
+                                if (isOver) "¥%.2f".format(fee) else "-")
+                        },
+                        "借阅记录.csv"
+                    )
+                }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
             }
             Spacer(Modifier.height(16.dp))
             Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -94,7 +112,7 @@ fun BorrowManageScreen() {
                                     val today = LocalDate.now()
                                     val isOverdue = r.status == "借阅中" && try { LocalDate.parse(r.dueDate).isBefore(today) } catch (_: Exception) { false }
                                     val overdueDays = if (isOverdue) ChronoUnit.DAYS.between(try { LocalDate.parse(r.dueDate) } catch (_: Exception) { today }, today) else 0
-                                    val fine = overdueDays * 0.50
+                                    val fine = overdueDays * SystemConfig.getLateFeeDailyRate()
                                     val displayStatus = if (isOverdue) "已逾期" else r.status
                                     Row(modifier = Modifier.fillMaxWidth().background(
                                         if (index % 2 == 1) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface

@@ -3,6 +3,8 @@ package org.zl.team.ui.stat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,13 +23,17 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import org.zl.team.service.StatisticsService
+import org.zl.team.service.SaleService
+import org.zl.team.service.BookService
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
 import org.zl.team.ui.components.DateField
+import kotlin.math.min
 
 @Composable
 fun StatisticsScreen() {
@@ -98,6 +104,7 @@ fun StatisticsScreen() {
         PrimaryTabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("统计表格") })
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("趋势图表") })
+            Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("分类分析") })
         }
 
         Spacer(Modifier.height(12.dp))
@@ -111,6 +118,7 @@ fun StatisticsScreen() {
                     when (selectedTab) {
                         0 -> StatTable(rows)
                         1 -> StatChart(rows)
+                        2 -> CategoryPieChart(startDate, endDate)
                     }
                 }
             }
@@ -311,6 +319,84 @@ private fun RowScope.StatCard(label: String, value: String, color: Color) {
             Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = color)
+        }
+    }
+}
+
+// ─── Tab 3: 分类销售饼图 ───────────────────────────────
+@Composable
+private fun ColumnScope.CategoryPieChart(startDate: String, endDate: String) {
+    var catData by remember { mutableStateOf<List<Pair<String, Double>>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(startDate, endDate) {
+        isLoading = true
+        try {
+            val sales = SaleService.listByDateRange(startDate, endDate)
+            val books = BookService.listAll().associateBy { it.bookId }
+            val catMap = mutableMapOf<String, Double>()
+            sales.forEach { s ->
+                val cat = s.bookId?.let { books[it]?.categoryId } ?: "未分类"
+                catMap[cat] = (catMap[cat] ?: 0.0) + (s.amount ?: 0.0)
+            }
+            catData = catMap.entries.sortedByDescending { it.value }.map { it.key to it.value }
+        } catch (_: Exception) { }
+        isLoading = false
+    }
+
+    Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxSize()) {
+        if (isLoading) {
+            LoadingIndicator()
+        } else if (catData.isEmpty()) {
+            EmptyHint("所选时段无销售数据")
+        } else {
+            Row(Modifier.fillMaxSize().padding(24.dp)) {
+                // 饼图
+                val total = catData.sumOf { it.second }
+                val colors = listOf(
+                    Color(0xFF1565C0), Color(0xFFD32F2F), Color(0xFF2E7D32),
+                    Color(0xFFF57F17), Color(0xFF7B1FA2), Color(0xFF00838F),
+                    Color(0xFFE65100), Color(0xFF37474F), Color(0xFF78909C),
+                    Color(0xFF558B2F),
+                )
+                val bgColor = MaterialTheme.colorScheme.surface
+                Canvas(modifier = Modifier.size(280.dp), onDraw = {
+                    val diameter = min(size.width, size.height)
+                    val r = diameter / 2
+                    val topLeft = Offset(
+                        (size.width - diameter) / 2, (size.height - diameter) / 2
+                    )
+                    val arcSize = Size(diameter, diameter)
+                    var startAngle = -90f
+                    catData.forEachIndexed { i, (_, amount) ->
+                        val sweep = (amount / total * 360).toFloat().coerceAtLeast(0.5f)
+                        drawArc(colors[i % colors.size], startAngle, sweep, true, topLeft, arcSize)
+                        startAngle += sweep
+                    }
+                    drawCircle(bgColor, r * 0.5f, Offset(size.width / 2, size.height / 2))
+                })
+
+                Spacer(Modifier.width(24.dp))
+
+                // 图例 + 数据
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                    Text("分类销售分析", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text("总销售额: ¥%.2f".format(total), fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(12.dp))
+                    catData.forEachIndexed { i, (cat, amount) ->
+                        val pct = if (total > 0) amount / total * 100 else 0.0
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.size(10.dp).background(colors[i % colors.size], RoundedCornerShape(2.dp)))
+                            Spacer(Modifier.width(8.dp))
+                            Text(cat, Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("¥%.2f".format(amount), Modifier.width(90.dp), fontSize = 13.sp)
+                            Text("%.1f%%".format(pct), Modifier.width(50.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f))
+                    }
+                }
+            }
         }
     }
 }

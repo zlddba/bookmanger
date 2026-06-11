@@ -81,6 +81,7 @@ object BorrowService {
 
             bookMapper.updateStock(bookId, book.stock - 1)
             session.commit()
+            OperationLogService.log("借阅", "图书", bookId, "借书: $bookId -> $cardNo, 应还: $finalDueDate")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -104,6 +105,7 @@ object BorrowService {
             }
 
             session.commit()
+            OperationLogService.log("归还", "图书", record.bookId, "还书: id=$id, 日期: $returnDate")
             return true
         } catch (e: Exception) {
             session.rollback()

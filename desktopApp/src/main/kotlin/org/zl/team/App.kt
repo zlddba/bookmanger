@@ -9,6 +9,7 @@ import org.zl.team.ui.ThemeManager
 import org.zl.team.ui.login.LoginScreen
 import org.zl.team.ui.main.MainScreen
 import org.zl.team.util.SessionManager
+import org.zl.team.service.BackupService
 
 private val DarkColors = darkColorScheme(
     primary = Color(0xFF90CAF9),
@@ -54,6 +55,11 @@ private val LightColors = lightColorScheme(
 fun App() {
     val scheme = if (ThemeManager.isDarkMode) DarkColors else LightColors
     MaterialTheme(colorScheme = scheme) {
+        // 启动时自动备份
+        LaunchedEffect(Unit) {
+            try { BackupService.autoBackup() } catch (_: Exception) { }
+        }
+
         var loggedIn by remember { mutableStateOf(false) }
 
         if (!loggedIn) {

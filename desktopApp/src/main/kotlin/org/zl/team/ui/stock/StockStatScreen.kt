@@ -18,6 +18,7 @@ import org.zl.team.service.BookService
 import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
+import org.zl.team.util.CsvExporter
 
 @Composable
 fun StockStatScreen() {
@@ -57,6 +58,14 @@ fun StockStatScreen() {
                     StatCard("库存总价值", "¥%.2f".format(totalValue), MaterialTheme.colorScheme.secondary)
                     StatCard("缺货品种", "$outOfStock", if (outOfStock > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = {
+                    CsvExporter.export(
+                        listOf("编号", "书名", "定价", "库存", "库存价值"),
+                        books.map { listOf(it.bookId, it.title, if (it.price != null) "¥%.2f".format(it.price) else "-", it.stock.toString(), "¥%.2f".format((it.price ?: 0.0) * it.stock)) },
+                        "库存统计.csv"
+                    )
+                }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
                 Spacer(Modifier.height(16.dp))
 
                 Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {

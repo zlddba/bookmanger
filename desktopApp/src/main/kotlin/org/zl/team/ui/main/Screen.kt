@@ -67,4 +67,16 @@ sealed class Screen {
 
     // 借阅管理
     data object BorrowManage : Screen()
+
+    // 新增：首页看板
+    data object Dashboard : Screen()
+
+    // 新增：数据备份与恢复
+    data object BackupRestore : Screen()
+
+    // 新增：操作日志查看
+    data object OperationLog : Screen()
+
+    // 新增：系统配置
+    data object SystemConfig : Screen()
 }

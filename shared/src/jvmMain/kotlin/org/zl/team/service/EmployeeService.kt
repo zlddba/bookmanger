@@ -32,6 +32,7 @@ object EmployeeService {
             empMapper.insert(emp)
 
             session.commit()
+            OperationLogService.log("新增", "员工", account, "新增员工: $name ($role)")
             return true
         } catch (e: Exception) {
             session.rollback()
@@ -107,10 +108,12 @@ object EmployeeService {
             val adminMapper = session.getMapper(AdminMapper::class.java)
             val empMapper = session.getMapper(EmployeeMapper::class.java)
 
+            val emp = empMapper.selectById(account)
             adminMapper.delete(account)
             empMapper.delete(account)
 
             session.commit()
+            OperationLogService.log("删除", "员工", account, "删除员工: ${emp?.name ?: account}")
             return true
         } catch (e: Exception) {
             session.rollback()

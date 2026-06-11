@@ -65,6 +65,7 @@ object MyBatisUtil {
         configuration.addMapper(FeedbackMapper::class.java)
         configuration.addMapper(BookReservationMapper::class.java)
         configuration.addMapper(BorrowRecordMapper::class.java)
+        configuration.addMapper(OperationLogMapper::class.java)
 
         return SqlSessionFactoryBuilder().build(configuration)
     }

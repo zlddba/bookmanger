@@ -41,11 +41,16 @@ import org.zl.team.ui.sale.SaleQueryScreen
 import org.zl.team.ui.sale.TodayStatScreen
 import org.zl.team.ui.stock.BorrowManageScreen
 import org.zl.team.service.BorrowService
+import org.zl.team.service.StockAlertService
 import org.zl.team.ui.stock.ReservationScreen
 import org.zl.team.ui.stock.StockStatScreen
 import org.zl.team.ui.sale.SellScreen
 import org.zl.team.ui.search.BookSearchScreen
 import org.zl.team.ui.stat.StatisticsScreen
+import org.zl.team.ui.dashboard.DashboardScreen
+import org.zl.team.ui.dashboard.BackupRestoreScreen
+import org.zl.team.ui.dashboard.OperationLogScreen
+import org.zl.team.ui.dashboard.SystemConfigScreen
 import org.zl.team.ui.ThemeManager
 import org.zl.team.util.SessionManager
 
@@ -56,7 +61,7 @@ data class MenuGroup(val label: String, val items: List<MenuItem>, val icon: Str
 // ─── 主界面 ──────────────────────────────────────────────
 @Composable
 fun MainScreen(onLogout: () -> Unit) {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.BookSearch) }
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
     val role = SessionManager.currentUserRole
     val menus = remember(role) { getMenuGroups(role) }
@@ -72,7 +77,11 @@ fun MainScreen(onLogout: () -> Unit) {
     }
 
     var overdueCount by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) { overdueCount = BorrowService.getOverdueCount() }
+    var lowStockCount by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        overdueCount = BorrowService.getOverdueCount()
+        lowStockCount = StockAlertService.getLowStockCount(10)
+    }
 
     Row(modifier = Modifier.fillMaxSize()) {
         // ─── 侧边栏 ──────────────────────────────────────
@@ -81,6 +90,7 @@ fun MainScreen(onLogout: () -> Unit) {
             currentScreen = currentScreen,
             expandedGroups = expandedGroups,
             overdueCount = overdueCount,
+            lowStockCount = lowStockCount,
             onToggleGroup = { label ->
                 expandedGroups = if (label in expandedGroups)
                     expandedGroups - label
@@ -109,6 +119,7 @@ private fun NavigationSidebar(
     currentScreen: Screen,
     expandedGroups: Set<String>,
     overdueCount: Int,
+    lowStockCount: Int,
     onToggleGroup: (String) -> Unit,
     onScreenSelected: (Screen) -> Unit,
     onLogout: () -> Unit
@@ -163,6 +174,7 @@ private fun NavigationSidebar(
                         isExpanded = group.label in expandedGroups,
                         currentScreen = currentScreen,
                         overdueCount = overdueCount,
+                        lowStockCount = lowStockCount,
                         onToggle = { onToggleGroup(group.label) },
                         onSelect = onScreenSelected
                     )
@@ -220,6 +232,7 @@ private fun NavigationGroup(
     isExpanded: Boolean,
     currentScreen: Screen,
     overdueCount: Int,
+    lowStockCount: Int,
     onToggle: () -> Unit,
     onSelect: (Screen) -> Unit
 ) {
@@ -304,6 +317,19 @@ private fun NavigationGroup(
                                 )
                             }
                         }
+                        if ((item.screen == Screen.StockStat || item.screen == Screen.Dashboard) && lowStockCount > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            ) {
+                                Text(
+                                    "$lowStockCount",
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onError
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -346,6 +372,10 @@ private fun ContentArea(currentScreen: Screen) {
         is Screen.Settlement -> SettlementScreen()
         is Screen.GrossProfit -> GrossProfitScreen()
         is Screen.BorrowManage -> BorrowManageScreen()
+        is Screen.Dashboard -> DashboardScreen()
+        is Screen.BackupRestore -> BackupRestoreScreen()
+        is Screen.OperationLog -> OperationLogScreen()
+        is Screen.SystemConfig -> SystemConfigScreen()
         is Screen.Logout -> Unit
     }
 }
@@ -354,7 +384,11 @@ private fun ContentArea(currentScreen: Screen) {
 fun getMenuGroups(role: String): List<MenuGroup> = when (role) {
     "经理" -> listOf(
         MenuGroup("系统", listOf(
-            MenuItem("修改密码", Screen.ChangePassword)
+            MenuItem("工作台", Screen.Dashboard),
+            MenuItem("修改密码", Screen.ChangePassword),
+            MenuItem("数据备份", Screen.BackupRestore),
+            MenuItem("操作日志", Screen.OperationLog),
+            MenuItem("系统配置", Screen.SystemConfig)
         )),
         MenuGroup("员工管理", listOf(
             MenuItem("员工管理", Screen.EmployeeManage)
@@ -399,7 +433,11 @@ fun getMenuGroups(role: String): List<MenuGroup> = when (role) {
     )
 
     "仓库管理员" -> listOf(
-        MenuGroup("系统", listOf(MenuItem("修改密码", Screen.ChangePassword))),
+        MenuGroup("系统", listOf(
+            MenuItem("工作台", Screen.Dashboard),
+            MenuItem("修改密码", Screen.ChangePassword),
+            MenuItem("操作日志", Screen.OperationLog)
+        )),
         MenuGroup("图书管理", listOf(
             MenuItem("图书资料", Screen.BookManage)
         )),
@@ -422,7 +460,11 @@ fun getMenuGroups(role: String): List<MenuGroup> = when (role) {
     )
 
     "售书员" -> listOf(
-        MenuGroup("系统", listOf(MenuItem("修改密码", Screen.ChangePassword))),
+        MenuGroup("系统", listOf(
+            MenuItem("工作台", Screen.Dashboard),
+            MenuItem("修改密码", Screen.ChangePassword),
+            MenuItem("操作日志", Screen.OperationLog)
+        )),
         MenuGroup("销售管理", listOf(
             MenuItem("图书销售", Screen.Sell),
             MenuItem("今日统计", Screen.TodayStat),

@@ -82,6 +82,7 @@ object SaleService {
             }
 
             session.commit()
+            OperationLogService.log("销售", "图书", bookId, "销售图书: $bookId x$quantity ¥${"%.2f".format(amount)}")
             return true
         } catch (e: Exception) { session.rollback(); throw e }
         finally { session.close() }

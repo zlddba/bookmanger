@@ -19,6 +19,7 @@ import org.zl.team.service.MemberService
 import org.zl.team.ui.components.EmptyHint
 import org.zl.team.ui.components.ErrorBanner
 import org.zl.team.ui.components.LoadingIndicator
+import org.zl.team.util.CsvExporter
 
 @Composable
 fun MemberManageScreen() {
@@ -51,6 +52,14 @@ fun MemberManageScreen() {
                 Button(onClick = { editing = null; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
                     Text("新建会员")
                 }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(onClick = {
+                    CsvExporter.export(
+                        listOf("卡号", "姓名", "等级", "性别", "地址", "单位", "电话", "邮箱", "累计消费", "注册日期"),
+                        members.map { listOf(it.cardNo, it.name, it.level.toString(), it.gender, it.address, it.company, it.phone, it.email, "¥%.2f".format(it.totalSpent), it.regDate) },
+                        "会员列表.csv"
+                    )
+                }, shape = RoundedCornerShape(10.dp)) { Text("导出 CSV") }
             }
             Spacer(Modifier.height(16.dp))
             Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {

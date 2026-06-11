@@ -41,6 +41,7 @@ object MemberService {
             memberMapper.insert(member)
             adminMapper.insert(Admin(member.cardNo, PasswordUtil.hash(password), "会员"))
             session.commit()
+            OperationLogService.log("新增", "会员", member.cardNo, "新增会员: ${member.name}")
             return true
         } catch (e: Exception) { session.rollback(); throw e }
         finally { session.close() }
@@ -52,6 +53,7 @@ object MemberService {
             val mapper = session.getMapper(MemberMapper::class.java)
             if (mapper.selectById(member.cardNo) == null) return false
             mapper.update(member); session.commit()
+            OperationLogService.log("修改", "会员", member.cardNo, "修改会员: ${member.name}")
             return true
         } catch (e: Exception) { session.rollback(); throw e }
         finally { session.close() }
@@ -61,11 +63,12 @@ object MemberService {
         val session = MyBatisUtil.getSqlSession()
         try {
             val mapper = session.getMapper(MemberMapper::class.java)
+            val member = mapper.selectById(cardNo) ?: return false
             val adminMapper = session.getMapper(AdminMapper::class.java)
-            if (mapper.selectById(cardNo) == null) return false
             mapper.delete(cardNo)
             adminMapper.delete(cardNo)
             session.commit()
+            OperationLogService.log("删除", "会员", cardNo, "删除会员: ${member.name}")
             return true
         } catch (e: Exception) { session.rollback(); throw e }
         finally { session.close() }
