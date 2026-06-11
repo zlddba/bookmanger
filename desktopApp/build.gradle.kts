@@ -63,7 +63,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "BookManager"
-            packageVersion = "1.0.0"
+            packageVersion = "2.0.0"
             description = "Book Manager System"
             vendor = "BookManager"
 
@@ -153,7 +153,7 @@ val packageWithJre by tasks.registering(Exec::class) {
             "--main-jar", mainJar.name,
             "--main-class", "org.zl.team.MainKt",
             "--name", pkgName,
-            "--app-version", "1.0.0",
+            "--app-version", "2.0.0",
             "--vendor", "BookManager",
             "--dest", outputDir.absolutePath,
             "--win-menu",
