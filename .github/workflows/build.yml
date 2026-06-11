@@ -87,7 +87,7 @@ jobs:
       - name: 创建 Release 标签
         id: tag
         run: |
-          $ver = "2.0.0"
+          $ver = Select-String -Path "desktopApp/build.gradle.kts" -Pattern 'packageVersion = "([^"]+)"' | ForEach-Object { $_.Matches.Groups[1].Value }
           $time = Get-Date -Format "yyyyMMdd-HHmmss"
           $tag = "v${ver}-${time}"
           echo "tag=$tag" >> $env:GITHUB_OUTPUT
