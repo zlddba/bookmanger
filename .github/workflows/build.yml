@@ -1,0 +1,103 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false
+
+jobs:
+  build:
+    name: 编译 + 测试
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 JDK 21 (Liberica)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "liberica"
+          java-package: jdk
+
+      - name: 缓存 Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 编译检查
+        run: ./gradlew :desktopApp:compileKotlin --no-daemon
+
+      - name: 运行测试
+        run: ./gradlew :shared:jvmTest --no-daemon
+
+  package-msi:
+    name: 打包 MSI
+    if: |
+      github.event_name == 'push'
+      && contains(github.event.head_commit.message, 'buildnewversion')
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 JDK 21 (Liberica)
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "liberica"
+          java-package: jdk
+
+      - name: 缓存 Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 安装 WiX Toolset
+        run: choco install wixtoolset --version=3.14.0 --no-progress --confirm
+        shell: powershell
+
+      - name: 生成 JRE（jlink）
+        run: |
+          jlink --module-path "%JAVA_HOME%/jmods" ^
+            --add-modules java.base,java.desktop,java.logging,java.naming,java.net.http,java.sql,java.xml,jdk.unsupported,jdk.crypto.ec,java.management,java.instrument,java.compiler ^
+            --output jrerun/windows/jre ^
+            --compress=2 --no-header-files --no-man-pages
+        shell: cmd
+
+      - name: 构建 MSI
+        run: ./gradlew :desktopApp:packageWithJre --no-daemon -x :shared:jvmTest
+
+      - name: 创建 Release 标签
+        id: tag
+        run: |
+          $ver = "1.0.0"
+          $time = Get-Date -Format "yyyyMMdd-HHmmss"
+          $tag = "v${ver}-${time}"
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: 创建 Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.tag.outputs.tag }}
+          name: BookManager ${{ steps.tag.outputs.tag }}
+          body: |
+            ${{ github.event.head_commit.message }}
+
+            - Build New Version
+          artifacts: desktopApp/build/jpackage/*.msi
+          token: ${{ secrets.GITHUB_TOKEN }}
