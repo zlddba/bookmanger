@@ -28,6 +28,7 @@ fun MemberManageScreen() {
     var editing by remember { mutableStateOf<Member?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     fun load() {
         isLoading = true
@@ -96,15 +97,29 @@ fun MemberManageScreen() {
             MemberDetailPanel(
                 member = selected!!,
                 onEdit = { editing = selected; showDialog = true },
-                onDelete = {
-                    MemberService.delete(selected!!.cardNo)
-                    selected = null; load()
-                }
+                onDelete = { showDeleteConfirm = true }
             )
         }
     }
     if (showDialog) {
         MemberDialog(member = editing, onDismiss = { showDialog = false }, onSaved = { showDialog = false; load() })
+    }
+
+    if (showDeleteConfirm && selected != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("确认删除") },
+            text = { Text("确定要删除会员「${selected!!.cardNo}」吗？此操作不可撤销。") },
+            confirmButton = {
+                Button(onClick = {
+                    MemberService.delete(selected!!.cardNo)
+                    showDeleteConfirm = false; selected = null; load()
+                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                    Text("删除")
+                }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") } }
+        )
     }
 }
 

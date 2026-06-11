@@ -27,7 +27,7 @@ object GrossProfitService {
 
             return saleMapper.selectByDateRange(startDate, endDate)
                 .mapNotNull { s ->
-                    if (s.date == null || s.amount == null || s.bookId == null || s.quantity == null) null
+                    if (s.date == null || s.amount == null || s.bookId == null || s.quantity == null || s.quantity == 0) null
                     else {
                         val bp = priceMapper.selectById(s.bookId)
                         val costPrice = bp?.price ?: 0.0

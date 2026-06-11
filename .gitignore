@@ -21,3 +21,6 @@ build
 jrerun/
 errors/
 desktopApp/data/
+shared/data/
+shared/test_*.db
+*.log

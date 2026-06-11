@@ -64,9 +64,9 @@ fun SellScreen() {
     LaunchedEffect(Unit) { search() }
 
     Row(modifier = Modifier.fillMaxSize().padding(24.dp).onPreviewKeyEvent { event ->
-        if (event.type == KeyEventType.KeyUp && event.key == Key.F8 && selectedBook != null && (quantity.toIntOrNull() ?: 0) > 0 && (quantity.toIntOrNull() ?: 0) <= (selectedBook?.stock ?: 0)) {
-            val qty = quantity.toIntOrNull() ?: 0
-            val book = selectedBook!!
+        val qty = quantity.toIntOrNull() ?: 0
+        val book = selectedBook ?: return@onPreviewKeyEvent false
+        if (event.type == KeyEventType.KeyUp && event.key == Key.F8 && qty > 0 && qty <= book.stock) {
             val ok = SaleService.sell(bookId = book.bookId, quantity = qty, cardNo = cardNo.ifBlank { null }, date = editableDate, remark = remark.ifBlank { null })
             if (ok) { statusMessage = "销售成功！"; isSuccess = true; lastPrintTitle = book.title; lastPrintQty = qty; lastPrintPrice = book.price ?: 0.0; lastPrintDate = editableDate; selectedBook = BookService.getById(book.bookId); search() }
             else { statusMessage = "销售失败，请检查数据"; isSuccess = false }

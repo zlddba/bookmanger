@@ -84,8 +84,9 @@ fun MemberSelfScreen() {
                 Spacer(Modifier.height(12.dp))
 
                 // ─── 汇总统计 ───────────────────────────────
-                val activeBorrows = borrows.filter { it.status == "借阅中" || (it.status != "已归还" && it.dueDate >= LocalDate.now().toString()) }
-                val overdueBorrows = borrows.filter { it.status != "已归还" && it.dueDate < LocalDate.now().toString() }
+                val today = LocalDate.now().toString()
+                val activeBorrows = borrows.filter { it.status == "借阅中" && it.dueDate >= today }
+                val overdueBorrows = borrows.filter { it.status == "借阅中" && it.dueDate < today }
                 val activeCount = activeBorrows.size
                 val overdueCount = overdueBorrows.size
 

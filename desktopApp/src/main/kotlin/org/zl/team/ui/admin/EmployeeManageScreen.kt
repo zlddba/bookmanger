@@ -142,6 +142,7 @@ private fun EmployeeActionPanel(
 ) {
     var showResetPwd by remember { mutableStateOf(false) }
     var newPwd by remember { mutableStateOf("") }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.width(300.dp).fillMaxHeight(),
@@ -210,16 +211,31 @@ private fun EmployeeActionPanel(
             if (admin.userId != "admin") {
                 Spacer(Modifier.height(8.dp))
                 TextButton(
-                    onClick = {
-                        if (EmployeeService.deleteEmployee(admin.userId)) {
-                            onMessage("已删除 ${admin.userId}")
-                            onRefresh()
-                        } else { onMessage("删除失败") }
-                    },
+                    onClick = { showDeleteConfirm = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("删除此员工", color = MaterialTheme.colorScheme.error)
                 }
+            }
+
+            if (showDeleteConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteConfirm = false },
+                    title = { Text("确认删除") },
+                    text = { Text("确定要删除员工「${admin.userId}」吗？此操作不可撤销。") },
+                    confirmButton = {
+                        Button(onClick = {
+                            if (EmployeeService.deleteEmployee(admin.userId)) {
+                                onMessage("已删除 ${admin.userId}")
+                                onRefresh()
+                            } else { onMessage("删除失败") }
+                            showDeleteConfirm = false
+                        }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                            Text("删除")
+                        }
+                    },
+                    dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") } }
+                )
             }
         }
     }

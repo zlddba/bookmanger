@@ -39,13 +39,13 @@ object SettlementService {
 
             val salesByPeriod = sales
                 .filter { it.date != null && it.amount != null }
-                .groupBy { format(it.date!!) }
+                .groupBy { format(it.date ?: "") }
             val purchasesByPeriod = purchases
                 .filter { it.date != null && it.amount != null }
-                .groupBy { format(it.date!!) }
+                .groupBy { format(it.date ?: "") }
             val returnsByPeriod = returns
                 .filter { it.date != null && it.amount != null }
-                .groupBy { format(it.date!!) }
+                .groupBy { format(it.date ?: "") }
 
             val allPeriods = (salesByPeriod.keys + purchasesByPeriod.keys + returnsByPeriod.keys).sorted()
 
@@ -54,9 +54,9 @@ object SettlementService {
                 val purchaseList = purchasesByPeriod[period] ?: emptyList()
                 val returnList = returnsByPeriod[period] ?: emptyList()
 
-                val saleAmt = saleList.sumOf { it.amount!! }
-                val purchaseAmt = purchaseList.sumOf { it.amount!! }
-                val returnAmt = returnList.sumOf { it.amount!! }
+                val saleAmt = saleList.sumOf { it.amount ?: 0.0 }
+                val purchaseAmt = purchaseList.sumOf { it.amount ?: 0.0 }
+                val returnAmt = returnList.sumOf { it.amount ?: 0.0 }
 
                 SettlementRow(
                     period = period,

@@ -44,34 +44,31 @@ fun CategoryManageScreen() {
     LaunchedEffect(Unit) { load() }
 
     val hasActiveFilter = selected != null
-    if (isLoading) {
-        LoadingIndicator()
-    } else if (loadError != null) {
-        ErrorBanner(loadError!!, onRetry = ::load)
-    } else if (categories.isEmpty() && !hasActiveFilter) {
-        EmptyHint("暂无分类数据")
-    } else {
-        Row(modifier = Modifier.fillMaxSize().padding(24.dp)) {
-            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("图书分类", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-                    Spacer(Modifier.weight(1f))
-                    if (selected != null) {
-                        Text("父分类: ${selected!!.name}(${selected!!.categoryId})", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.width(8.dp))
-                        Button(onClick = { parentId = null; selected = null }, shape = RoundedCornerShape(10.dp)) {
-                            Text("全部")
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Button(onClick = { editing = null; parentId = selected!!.categoryId; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
-                            Text("新增子分类")
-                        }
-                    }
-                    Button(onClick = { editing = null; parentId = null; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
-                        Text("新增顶级分类")
-                    }
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("图书分类", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(Modifier.weight(1f))
+            if (selected != null) {
+                Text("父分类: ${selected!!.name}(${selected!!.categoryId})", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { parentId = null; selected = null }, shape = RoundedCornerShape(10.dp)) {
+                    Text("全部")
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { editing = null; parentId = selected!!.categoryId; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
+                    Text("新增子分类")
+                }
+            }
+            Button(onClick = { editing = null; parentId = null; showDialog = true }, shape = RoundedCornerShape(10.dp)) {
+                Text("新增顶级分类")
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        when {
+            isLoading -> LoadingIndicator()
+            loadError != null -> ErrorBanner(loadError!!, onRetry = ::load)
+            categories.isEmpty() && !hasActiveFilter -> EmptyHint("暂无分类数据")
+            else -> {
                 Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surface, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth().weight(1f)) {
                     Column {
                         Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)).padding(horizontal = 16.dp, vertical = 12.dp)) {

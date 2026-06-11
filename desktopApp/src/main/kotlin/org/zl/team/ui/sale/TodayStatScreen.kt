@@ -43,7 +43,10 @@ fun TodayStatScreen() {
         else -> {
             val totalQty = todaySales.sumOf { it.quantity ?: 0 }
             val totalAmount = todaySales.sumOf { it.amount ?: 0.0 }
-            val totalDiscount = todaySales.sumOf { (1.0 - it.discount) * (it.amount ?: 0.0) / (it.discount.coerceAtLeast(0.01)) }
+            val totalDiscount = todaySales.sumOf { s ->
+                val amt = s.amount ?: 0.0
+                if (s.discount <= 0.0) amt else (1.0 - s.discount) * amt / s.discount
+            }
 
             Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
                 Text("今日统计", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)

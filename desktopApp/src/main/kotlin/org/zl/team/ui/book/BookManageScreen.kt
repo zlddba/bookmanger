@@ -37,6 +37,7 @@ fun BookManageScreen() {
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
     var importResult by remember { mutableStateOf<CsvImporter.ImportResult?>(null) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     // 分页
     var currentPage by remember { mutableStateOf(0) }
     val pageSize = 20
@@ -128,10 +129,7 @@ fun BookManageScreen() {
             BookDetailPanel(
                 book = selected!!,
                 onEdit = { editing = selected; showDialog = true },
-                onDelete = {
-                    BookService.delete(selected!!.bookId)
-                    selected = null; load()
-                }
+                onDelete = { showDeleteConfirm = true }
             )
         }
     }
@@ -166,6 +164,23 @@ fun BookManageScreen() {
                 }
             },
             confirmButton = { Button(onClick = { importResult = null }) { Text("确定") } }
+        )
+    }
+
+    if (showDeleteConfirm && selected != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("确认删除") },
+            text = { Text("确定要删除图书「${selected!!.title}」吗？此操作不可撤销。") },
+            confirmButton = {
+                Button(onClick = {
+                    BookService.delete(selected!!.bookId)
+                    showDeleteConfirm = false; selected = null; load()
+                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                    Text("删除")
+                }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") } }
         )
     }
 }

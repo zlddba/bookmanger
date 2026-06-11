@@ -34,18 +34,18 @@ object StatisticsService {
 
             val purchaseByPeriod = purchases
                 .filter { it.date != null && it.amount != null }
-                .groupBy { format(it.date!!) }
-                .mapValues { e -> e.value.sumOf { it.amount!! } }
+                .groupBy { format(it.date ?: "") }
+                .mapValues { e -> e.value.sumOf { it.amount ?: 0.0 } }
 
             val saleByPeriod = sales
                 .filter { it.amount != null }
-                .groupBy { format(it.date!!) }
-                .mapValues { e -> e.value.sumOf { it.amount!! } }
+                .groupBy { format(it.date ?: "") }
+                .mapValues { e -> e.value.sumOf { it.amount ?: 0.0 } }
 
             val returnByPeriod = returns
                 .filter { it.date != null && it.amount != null }
-                .groupBy { format(it.date!!) }
-                .mapValues { e -> e.value.sumOf { it.amount!! } }
+                .groupBy { format(it.date ?: "") }
+                .mapValues { e -> e.value.sumOf { it.amount ?: 0.0 } }
 
             val allPeriods = (purchaseByPeriod.keys + saleByPeriod.keys + returnByPeriod.keys).sorted()
 

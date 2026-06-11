@@ -28,6 +28,7 @@ fun SupplierManageScreen() {
     var editing by remember { mutableStateOf<Supplier?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     fun load() {
         isLoading = true
@@ -92,10 +93,7 @@ fun SupplierManageScreen() {
                     SupplierDetailPanel(
                         supplier = selected!!,
                         onEdit = { editing = selected; showDialog = true },
-                        onDelete = {
-                            SupplierService.delete(selected!!.supplierId)
-                            selected = null; load()
-                        }
+                        onDelete = { showDeleteConfirm = true }
                     )
                 }
             }
@@ -105,6 +103,23 @@ fun SupplierManageScreen() {
                     supplier = editing,
                     onDismiss = { showDialog = false },
                     onSaved = { showDialog = false; load() }
+                )
+            }
+
+            if (showDeleteConfirm && selected != null) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteConfirm = false },
+                    title = { Text("确认删除") },
+                    text = { Text("确定要删除供应商「${selected!!.supplierId}」吗？此操作不可撤销。") },
+                    confirmButton = {
+                        Button(onClick = {
+                            SupplierService.delete(selected!!.supplierId)
+                            showDeleteConfirm = false; selected = null; load()
+                        }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                            Text("删除")
+                        }
+                    },
+                    dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") } }
                 )
             }
         }
