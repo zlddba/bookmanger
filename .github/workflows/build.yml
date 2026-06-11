@@ -80,6 +80,10 @@ jobs:
       - name: 构建 MSI
         run: ./gradlew :desktopApp:packageWithJre --no-daemon -x :shared:jvmTest
 
+      - name: 打包源码 ZIP
+        run: |
+          git archive --format=zip HEAD > desktopApp/build/jpackage/BookManager-src.zip
+
       - name: 创建 Release 标签
         id: tag
         run: |
@@ -94,8 +98,47 @@ jobs:
           tag: ${{ steps.tag.outputs.tag }}
           name: BookManager ${{ steps.tag.outputs.tag }}
           body: |
-            ${{ github.event.head_commit.message }}
+            ## 图书管理系统 ${{ steps.tag.outputs.tag }}
 
-            - Build New Version
-          artifacts: desktopApp/build/jpackage/*.msi
+            基于 Kotlin Multiplatform + Compose Desktop 构建的桌面 MIS 系统。
+
+            ### 包含文件
+            - `BookManager-${{ steps.tag.outputs.tag }}.msi` — Windows 安装包（含完整 JRE）
+            - `BookManager-src.zip` — 完整项目源码
+
+            ### 功能模块
+            | 模块 | 功能 |
+            |------|------|
+            | 登录 | 帐号密码登录（3次限制）、游客进入、修改密码 |
+            | 图书管理 | 图书 CRUD、分类管理、书店简介、图书检索 |
+            | 进货管理 | 进货登记、进货查询、供应商管理 |
+            | 退货管理 | 退货登记、退货查询、退货统计 |
+            | 库存管理 | 库存统计、图书预订/缺书登记 |
+            | 销售管理 | 图书销售（含会员折扣）、本日统计、售书记录查询 |
+            | 会员管理 | 会员 CRUD、优惠政策、会员自助仪表盘 |
+            | 财务管理 | 每日/每月结算、毛利统计 |
+            | 统计分析 | 销售/进货趋势图表（柱状图+折线图） |
+            | 借阅管理 | 图书借阅/归还/续借 |
+            | 客户反馈 | 反馈提交、反馈管理 |
+
+            ### 技术栈
+            - **语言**: Kotlin 2.4.0
+            - **UI**: Compose Multiplatform 1.11.1 (Material 3)
+            - **持久层**: MyBatis 3.5.19 + SQLite
+            - **构建**: Gradle 9.5.1
+            - **日志**: SLF4J + Logback
+            - **运行环境**: 内置 Liberica JRE 21
+
+            ### 使用说明
+            1. 下载 MSI 安装包，双击安装
+            2. 默认帐号: `admin` / `admin`（经理权限）
+            3. 数据自动存储在 `%USERPROFILE%\.bookmanager\data\`
+            4. 日志位于 `%USERPROFILE%\.bookmanager\logs\`
+
+            ### 注意事项
+            - 安装时建议勾选"Choose Folder"自定义安装路径
+            - 如遇到杀毒软件拦截，请添加信任
+          artifacts: |
+            desktopApp/build/jpackage/*.msi
+            desktopApp/build/jpackage/BookManager-src.zip
           token: ${{ secrets.GITHUB_TOKEN }}
